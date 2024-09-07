@@ -20,7 +20,7 @@ class Sherlock {
       .map(v => {
         const result = v.match(/\[\+\] (\w+): (https?:\/\/[^\s]+)/);
 
-        if (result == null || result.length <= 3) return null;
+        if (result == null || result.length < 3) return null;
 
         const [original, org, url] = result;
 
