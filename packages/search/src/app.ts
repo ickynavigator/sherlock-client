@@ -9,6 +9,7 @@ import packageJson from '../package.json' with { type: 'json' };
 
 const SWAGGER_TAGS = {
   search: 'Search',
+  debug: 'Debug',
 };
 
 const app = new Elysia()
@@ -58,10 +59,9 @@ const app = new Elysia()
     'search/:username',
     async handler => {
       const username = handler.params.username.trim();
-      const ignoreCache = handler.query?.ignoreCache ?? false;
+      const ignoreCache = handler.query.ignoreCache;
 
       const isInQueue = await handler.store.queue.isInQueue(username);
-
       if (isInQueue) {
         handler.set.status = 409;
 
@@ -70,18 +70,36 @@ const app = new Elysia()
         };
       }
 
-      await handler.store.queue.enqueue(username);
-
       if (ignoreCache) {
         await handler.store.store.deleteUser(username);
       }
 
-      const search = await handler.sherlock.search(username);
-      const result = await handler.store.store.addUser(username, search);
+      const isInStore = await handler.store.store.isInStore(username);
+      if (isInStore) {
+        handler.set.status = 409;
 
-      await handler.store.queue.dequeue(username);
+        return {
+          message: 'The username is already in the store',
+        };
+      }
 
-      return result;
+      const job = async () => {
+        await handler.store.queue.enqueue(username);
+
+        const search = await handler.sherlock.search(username);
+
+        await handler.store.store.addUser(username, search);
+        await handler.store.queue.dequeue(username);
+      };
+
+      job();
+
+      handler.set.status = 202;
+
+      return {
+        message: 'The username is being processed',
+        results: `/search/${username}/results`,
+      };
     },
     {
       params: t.Object({
