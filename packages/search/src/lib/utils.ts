@@ -5,5 +5,10 @@ export const runCommand = async (command: string[]) => {
 
   const output = await new Response(process.stdout).text();
 
-  return output;
+  return {
+    [Symbol.dispose]() {
+      process.kill();
+    },
+    output,
+  };
 };
