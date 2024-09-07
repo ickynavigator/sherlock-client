@@ -1,19 +1,16 @@
 import { runCommand } from '~/lib/utils';
 import type { UserResult } from '~/types';
 
-const SHERLOCK_DOCKER_IMAGE = 'sherlock';
-
 class Sherlock {
-  // TODO: maybe don't use docker for the search
+  FLAGS = ['--no-color', '--site Instagram'];
+
+  getFlags() {
+    return this.FLAGS;
+  }
+
   async search(username: string) {
-    const res = await runCommand([
-      'docker',
-      'compose',
-      'run',
-      '--rm',
-      SHERLOCK_DOCKER_IMAGE,
-      username,
-    ]);
+    using r = await runCommand(['sherlock', ...this.getFlags(), username]);
+    const { output: res } = r;
 
     const cleanedRes: UserResult[] = res
       .split('\n')
