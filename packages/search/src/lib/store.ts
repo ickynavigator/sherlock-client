@@ -20,6 +20,10 @@ class Store {
   async isInStore(username: string) {
     return this.users.has(username);
   }
+
+  async debug() {
+    return Array.from(this.users.keys());
+  }
 }
 
 export default Store;

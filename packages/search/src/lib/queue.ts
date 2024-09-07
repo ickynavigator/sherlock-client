@@ -12,6 +12,10 @@ class Queue {
   async isInQueue(username: string) {
     return this.queue.has(username);
   }
+
+  async debug() {
+    return Array.from(this.queue);
+  }
 }
 
 export default Queue;
