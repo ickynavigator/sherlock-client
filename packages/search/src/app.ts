@@ -326,5 +326,53 @@ const app = new Elysia()
         },
       },
     },
+  )
+  .get(
+    'debug',
+    async handler => {
+      const store = await handler.store.store.debug();
+      const queue = await handler.store.queue.debug();
+
+      // eslint-disable-next-line no-console
+      console.debug(store, queue);
+
+      return {
+        store,
+        queue,
+      };
+    },
+    {
+      detail: {
+        tags: [SWAGGER_TAGS.debug],
+        responses: {
+          200: {
+            description: 'Debug information',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    store: {
+                      description: 'The current store state',
+                      type: 'array',
+                      items: {
+                        type: 'string',
+                      },
+                    },
+                    queue: {
+                      description: 'The current queue state',
+                      type: 'array',
+                      items: {
+                        type: 'string',
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   );
 export default app;
